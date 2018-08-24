@@ -1,5 +1,7 @@
 #!/bin/bash
 
+testsFailed=0
+
 source contrib/scripts/functions.sh
 function run {
   go test -short=true $@ |\
@@ -16,7 +18,9 @@ function runAll {
 
   for PKG in $(go list ./...|grep -v -E 'vendor|contrib|wiki|customtok'); do
     echo "Running test for $PKG"
-    run $PKG
+    if ! run $PKG; then
+        testsFailed=$((testsFailed+1))
+    fi
   done
 }
 
@@ -30,3 +34,5 @@ runAll
 echo
 echo "Running load-test.sh"
 ./contrib/scripts/load-test.sh
+
+exit "$testsFailed"
